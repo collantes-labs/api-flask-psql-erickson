@@ -1,0 +1,21 @@
+version: '3.9'
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:16.1
+    restart: always
+    networks:
+      - app-network
+    expose:
+      - '${POSTGRES_DOCKER_PORT}'
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_LOCAL_PORT}:${POSTGRES_DOCKER_PORT}"
+    volumes:
+      - ./sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+      - ./sql/data.sql:/docker-entrypoint-initdb.d/data.sql
