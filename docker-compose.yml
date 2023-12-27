@@ -1,21 +1,33 @@
 version: '3.9'
 
 networks:
-  app-network:
+  app-tier:
     driver: bridge
 
 services:
   db:
     image: postgres:16.1
     restart: always
-    networks:
-      - app-network
-    expose:
-      - '${POSTGRES_DOCKER_PORT}'
+    container_name: postgresql_service
     env_file:
       - .env
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "${POSTGRES_LOCAL_PORT}:${POSTGRES_DOCKER_PORT}"
-    volumes:
-      - ./sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
-      - ./sql/data.sql:/docker-entrypoint-initdb.d/data.sql
+    expose:
+      - '${POSTGRES_DOCKER_PORT}'
+    networks:
+      - app-tier
+    
+  faker:
+    # EL build SE USA PARA INDICAR LA RUTA DESDE DONDE SE VA A CONSTRUIR EL SERVICIO, LA RUTA DEBE TENER UN Dockerfile SIEMPRE
+    build: ./faker
+    restart: always
+    container_name: faker_service
+    ports:
+      - "${FAKER_LOCAL_PORT}:${FAKER_DOCKER_PORT}"
+    networks:
+      - app-tier
+    depends_on:
+      - db
