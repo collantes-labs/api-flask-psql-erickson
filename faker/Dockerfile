@@ -1,10 +1,12 @@
 FROM python:3
 
-COPY . /usr/src/app
-COPY requirements.txt /usr/src/app/requirements.txt
+WORKDIR /app
 
-WORKDIR /usr/src/app
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
+
+COPY . /app
+
 
 CMD ["python","faker-service.py"]

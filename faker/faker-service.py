@@ -1,6 +1,7 @@
-from flask import Flask,jsonify
+from flask import Flask,jsonify,Response
 from faker import Faker
-from sqlalchemy import create_engine,text
+from sqlalchemy import text
+from config.connection import connection_db
 import itertools
 import json
 import logging
@@ -36,17 +37,12 @@ def random_data():
 #ESTA FUNCION CREA LA CONEXION A LA DB
 def execute_queries(list_queries_string=[], querie_type=''):
 
-    db_name = 'db_psql'
-    db_user = 'root'
-    db_pass = '12345678'
-    # EL host SERIA EL NOMBRE DEL SERVICIO DE DB
-    db_host = 'db'
-    db_port = '5432'
+    
 
     try:
-        db_string = f'postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}'
-        db = create_engine(db_string)
-        connection = db.connect()
+        sessionmaker = connection_db()
+
+        connection = sessionmaker()
 
         if querie_type == 'INSERT':
             for querie in list_queries_string:
@@ -60,7 +56,7 @@ def execute_queries(list_queries_string=[], querie_type=''):
                 query = text(querie)
                 data_profiles = connection.execute(query).fetchall()
             logging.debug(data_profiles)
-            return json.dumps([dict(ix) for ix in data_profiles])
+            return [dict(ix) for ix in data_profiles]
             
         return {"message":"success query"}
         
@@ -82,8 +78,9 @@ def get_profiles():
     querie_data = 'SELECT * FROM profile;'
 
     try:
-        data_profiles = json.loads(execute_queries([querie_data], "SELECT"))
-        return json.dumps(data_profiles)
+        data_profiles = execute_queries([querie_data], "SELECT")
+        response = Response(data_profiles, status=200, mimetype='application/json')
+        return response
     except Exception as ex:
         logging.debug(ex)
         return {"message":"get records error"}
