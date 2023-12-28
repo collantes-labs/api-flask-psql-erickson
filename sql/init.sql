@@ -4,7 +4,7 @@ CREATE TABLE profile (
     company VARCHAR(150),
     ssn VARCHAR(250),
     residence VARCHAR(150),
-    current_location jsonb,
+    current_location VARCHAR(250),
     blood_group VARCHAR(150)    
 );
 

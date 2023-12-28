@@ -47,11 +47,23 @@ def execute_queries(list_queries_string=[], querie_type=''):
         db_string = f'postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}'
         db = create_engine(db_string)
         connection = db.connect()
+
         if querie_type == 'INSERT':
             for querie in list_queries_string:
                 query = text(querie)
                 data = connection.execute(query).rowcount
+                connection.commit()
+
+        if querie_type == 'SELECT':
+
+            for querie in list_queries_string:
+                query = text(querie)
+                data_profiles = connection.execute(query).fetchall()
+            logging.debug(data_profiles)
+            return json.dumps([dict(ix) for ix in data_profiles])
+            
         return {"message":"success query"}
+        
     except Exception as ex:
         logging.debug(ex)
 
@@ -63,7 +75,18 @@ def create_profiles():
         results_querie = execute_queries(random_data(), "INSERT")
         return jsonify(results_querie)
     except:
-        return {"message":"endpoint error"}
+        return {"message":"create records error"}
+    
+@app.route('/get_records')
+def get_profiles():
+    querie_data = 'SELECT * FROM profile;'
+
+    try:
+        data_profiles = json.loads(execute_queries([querie_data], "SELECT"))
+        return json.dumps(data_profiles)
+    except Exception as ex:
+        logging.debug(ex)
+        return {"message":"get records error"}
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
