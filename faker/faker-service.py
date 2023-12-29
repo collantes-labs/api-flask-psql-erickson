@@ -1,7 +1,8 @@
 from flask import Flask,jsonify,Response
 from faker import Faker
 from sqlalchemy import text
-from config.connection import connection_db
+from config.database import sessionmaker
+from models.profile import Profile
 import itertools
 import json
 import logging
@@ -37,26 +38,29 @@ def random_data():
 #ESTA FUNCION CREA LA CONEXION A LA DB
 def execute_queries(list_queries_string=[], querie_type=''):
 
-    
-
     try:
-        sessionmaker = connection_db()
-
-        connection = sessionmaker()
+        session_db = sessionmaker()
 
         if querie_type == 'INSERT':
             for querie in list_queries_string:
                 query = text(querie)
-                data = connection.execute(query).rowcount
-                connection.commit()
+                data = session_db.execute(query).rowcount
+                session_db.commit()
 
         if querie_type == 'SELECT':
+            data = []
 
-            for querie in list_queries_string:
-                query = text(querie)
-                data_profiles = connection.execute(query).fetchall()
+            results = session_db.query(Profile).all()
+            for row in results:
+                data_profiles = data.append(row)
             logging.debug(data_profiles)
-            return [dict(ix) for ix in data_profiles]
+            return data_profiles
+
+            """ for querie in list_queries_string:
+                query = text(querie)
+                data_profiles = session_db.execute(query).fetchall()
+            logging.debug(data_profiles)
+            return [dict(ix) for ix in data_profiles] """
             
         return {"message":"success query"}
         
