@@ -10,4 +10,4 @@ db_port = '5432'
 
 db_string = f'postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}'
 db = create_engine(db_string)
-sessionmaker = sessionmaker(bind=db)
+session_maker = sessionmaker(bind=db)

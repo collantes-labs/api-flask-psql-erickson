@@ -1,7 +1,7 @@
 from flask import Flask,jsonify,Response
 from faker import Faker
 from sqlalchemy import text
-from config.database import sessionmaker
+from config.database import session_maker
 from models.profile import Profile
 import itertools
 import json
@@ -39,22 +39,13 @@ def random_data():
 def execute_queries(list_queries_string=[], querie_type=''):
 
     try:
-        session_db = sessionmaker()
+        session_db = session_maker()
 
         if querie_type == 'INSERT':
             for querie in list_queries_string:
                 query = text(querie)
                 data = session_db.execute(query).rowcount
                 session_db.commit()
-
-        if querie_type == 'SELECT':
-            data = []
-
-            results = session_db.query(Profile).all()
-            for row in results:
-                data_profiles = data.append(row)
-            logging.debug(data_profiles)
-            return data_profiles
 
             """ for querie in list_queries_string:
                 query = text(querie)
@@ -82,8 +73,19 @@ def get_profiles():
     querie_data = 'SELECT * FROM profile;'
 
     try:
-        data_profiles = execute_queries([querie_data], "SELECT")
-        response = Response(data_profiles, status=200, mimetype='application/json')
+        session_db = session_maker()
+        data_query = []
+
+        results = session_db.query(Profile).all()
+        for row in results:
+            profile_data = {}
+            for column in row.__table__.columns:
+                profile_data[column.name] = getattr(row, column.name)
+            data_query.append(profile_data)
+
+        logging.debug(data_query)
+        response = jsonify(data_query)
+        logging.debug(response)
         return response
     except Exception as ex:
         logging.debug(ex)
