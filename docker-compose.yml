@@ -20,11 +20,11 @@ services:
     networks:
       - app-tier
     
-  faker:
-    # EL build SE USA PARA INDICAR LA RUTA DESDE DONDE SE VA A CONSTRUIR EL SERVICIO, LA RUTA DEBE TENER UN Dockerfile SIEMPRE
-    build: ./faker
+  api:
+    # THE build IS USED TO INDICATE THE PATH FROM WHERE THE SERVICE WILL BE BUILT, THE PATH MUST ALWAYS HAVE A Dockerfile
+    build: ./api
     restart: always
-    container_name: faker_service
+    container_name: api_service
     ports:
       - "${FAKER_LOCAL_PORT}:${FAKER_DOCKER_PORT}"
     networks:
